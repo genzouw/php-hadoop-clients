@@ -1,0 +1,23 @@
+{
+    "name": "genzouw/php-hadoop-clients",
+    "require": {
+        "monolog/monolog": "*",
+        "nesbot/carbon": "*",
+        "apache/thrift": "1.0.*@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "genzouw",
+            "email": "genzouw@gmail.com"
+        }
+    ]
+}
