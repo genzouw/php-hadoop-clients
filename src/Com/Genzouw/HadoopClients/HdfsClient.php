@@ -51,6 +51,23 @@ class HdfsClient
     }
 
     /**
+     * remove filefrom hdfs.
+     *
+     * @param string $hdfsFilePath hdfs file path
+     */
+    public function removeFileFromRemote(string $hdfsFilePath)
+    {
+        if ($this->fileExisted($hdfsFilePath)) {
+            foreach ($this->requestHosts as $host) {
+                $ret = $this->doDelete($host, 'DELETE', $hdfsFilePath);
+                if ($this->isSuccess($ret)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
      * put data to hdfs.
      *
      * @param string $hdfsFilePath hdfs file path
@@ -117,6 +134,23 @@ class HdfsClient
 
             // HDFS上にファイルを作成（すでに存在する場合は何もしない）
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+            $result = curl_exec($ch);
+
+            return $result;
+        } finally {
+            if (!is_null($ch)) {
+                curl_close($ch);
+            }
+        }
+    }
+
+    public function doDelete(string $requestHost, string $operation, string $hdfsFilePath)
+    {
+        try {
+            $ch = $this->commonHeader($requestHost, $operation, $hdfsFilePath);
+
+            // HDFS上にファイルを作成（すでに存在する場合は何もしない）
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
             $result = curl_exec($ch);
 
             return $result;

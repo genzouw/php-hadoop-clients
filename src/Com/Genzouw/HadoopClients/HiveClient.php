@@ -6,9 +6,6 @@ namespace Com\Genzouw\HadoopClients;
  * Thrift(HiveServer2)サーバへの接続用クライアントクラス.
  *
  * @version $id$
- *
- * @copyright Copyright © LOCKON CO.,LTD. All Rights Reserved.
- * @author toshiak wakabayashi <toshiaki_wakabayashi@lockon.co.jp>
  */
 class HiveClient
 {
@@ -32,6 +29,9 @@ class HiveClient
         $this->isConnected = false;
     }
 
+    /**
+     * サーバへ接続する.
+     */
     public function connect()
     {
         $this->hive
@@ -54,34 +54,11 @@ class HiveClient
             $this->connect();
         }
 
-        $hiveQuery = $this->hive->query($sql);
-
-        if (!is_null($hiveQuery)) {
-            $hiveQuery->wait();
-        }
-
-        return $hiveQuery;
-    }
-
-    /**
-     * queryAll.
-     *
-     * @param string $sqls 複数クエリ(セミコロン区切りを想定)
-     */
-    public function queryAll(string $sqls)
-    {
-        if (!$this->isConnected) {
-            $this->connect();
-        }
-
-        foreach (explode(';', $sqls) as $sql) {
-            if (empty(trim($sql))) {
+        foreach (explode(';', $sql) as $s) {
+            if (empty(trim($s))) {
                 continue;
             }
-            $hiveQuery = $this->hive->query($sql);
-        }
-
-        if (!is_null($hiveQuery)) {
+            $hiveQuery = $this->hive->query($s);
             $hiveQuery->wait();
         }
 
