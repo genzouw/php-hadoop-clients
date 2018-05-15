@@ -57,14 +57,19 @@ class HdfsClient
      */
     public function removeFileFromRemote(string $hdfsFilePath)
     {
+        $result = false;
+
         if ($this->fileExisted($hdfsFilePath)) {
             foreach ($this->requestHosts as $host) {
                 $ret = $this->doDelete($host, 'DELETE', $hdfsFilePath);
                 if ($this->isSuccess($ret)) {
+                    $result = true;
                     break;
                 }
             }
         }
+
+        return $result;
     }
 
     /**
@@ -75,23 +80,31 @@ class HdfsClient
      */
     public function putFileToRemote(string $hdfsFilePath, string $data)
     {
+        $result = false;
+
         if (!$this->fileExisted($hdfsFilePath)) {
             foreach ($this->requestHosts as $host) {
                 $ret = $this->doPut($host, 'CREATE', $hdfsFilePath);
                 if ($this->isSuccess($ret)) {
+                    $result = true;
                     break;
                 }
             }
         }
 
+        if (!$result) {
+            return $result;
+        }
+
         foreach ($this->requestHosts as $host) {
             $ret = $this->doPost($host, 'APPEND', $hdfsFilePath, gzencode($data));
             if ($this->isSuccess($ret)) {
+                $result = true;
                 break;
             }
         }
 
-        return $ret;
+        return $result;
     }
 
     public function commonHeader(string $requestHost, string $operation, string $hdfsFilePath)
