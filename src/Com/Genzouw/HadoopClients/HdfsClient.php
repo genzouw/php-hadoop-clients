@@ -32,7 +32,15 @@ class HdfsClient
 
         $status = json_decode($ret, true);
 
-        return $this->isSuccess($ret) || !$status['RemoteException']['exception'] === 'FileNotFoundException';
+        if ($this->isSuccess($ret)) {
+            return true;
+        }
+
+        if ($status['RemoteException']['exception'] !== 'FileNotFoundException') {
+            throw new \Exception($status['RemoteException']['exception']);
+        }
+
+        return false;
     }
 
     public function fileSize(string $hdfsFilePath)
@@ -57,19 +65,19 @@ class HdfsClient
      */
     public function removeFileFromRemote(string $hdfsFilePath)
     {
-        $result = false;
+        if (!$this->fileExisted($hdfsFilePath)) {
+            return true;
+        }
 
-        if ($this->fileExisted($hdfsFilePath)) {
-            foreach ($this->requestHosts as $host) {
-                $ret = $this->doDelete($host, 'DELETE', $hdfsFilePath);
-                if ($this->isSuccess($ret)) {
-                    $result = true;
-                    break;
-                }
+        foreach ($this->requestHosts as $host) {
+            $ret = $this->doDelete($host, 'DELETE', $hdfsFilePath);
+            if ($this->isSuccess($ret)) {
+                return true;
+                break;
             }
         }
 
-        return $result;
+        return false;
     }
 
     /**
@@ -80,9 +88,9 @@ class HdfsClient
      */
     public function putFileToRemote(string $hdfsFilePath, string $data)
     {
-        $result = false;
-
         if (!$this->fileExisted($hdfsFilePath)) {
+            $result = false;
+
             foreach ($this->requestHosts as $host) {
                 $ret = $this->doPut($host, 'CREATE', $hdfsFilePath);
                 if ($this->isSuccess($ret)) {
@@ -90,21 +98,21 @@ class HdfsClient
                     break;
                 }
             }
-        }
 
-        if (!$result) {
-            return $result;
+            if (!$result) {
+                return $result;
+            }
         }
 
         foreach ($this->requestHosts as $host) {
             $ret = $this->doPost($host, 'APPEND', $hdfsFilePath, gzencode($data));
             if ($this->isSuccess($ret)) {
-                $result = true;
+                return true;
                 break;
             }
         }
 
-        return $result;
+        return false;
     }
 
     public function commonHeader(string $requestHost, string $operation, string $hdfsFilePath)
