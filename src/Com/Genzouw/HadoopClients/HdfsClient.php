@@ -204,8 +204,12 @@ class HdfsClient
         }
     }
 
-    private function isSuccess(string $ret)
+    private function isSuccess($ret)
     {
+        if (is_bool($ret)) {
+            return $ret;
+        }
+
         if (empty($ret)) {
             return true;
         }
